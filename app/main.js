@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-
+const zlib = require("zlib");
 // You can use print statements as follows for debugging, they'll be visible when running tests.
 console.error("Logs from your program will appear here!");
 
@@ -10,6 +10,9 @@ const command = process.argv[2];
 switch (command) {
   case "init":
     createGitDirectory();
+    break;
+  case "cat-file":
+    readFileBlob();
     break;
   default:
     throw new Error(`Unknown command ${command}`);
@@ -22,4 +25,10 @@ function createGitDirectory() {
 
   fs.writeFileSync(path.join(process.cwd(), ".git", "HEAD"), "ref: refs/heads/main\n");
   console.log("Initialized git directory");
+}
+
+function readFileBlob(){
+    const blob = fs.readFileSync(path.join(process.cwd(), '.git', 'objects', process.argv[4].substring(0, 2), process.argv[4].substring(2) ))
+    const bufferToString = zlib.unzipSync(blob).toString()
+    process.stdout.write(bufferToString.substring(bufferToString.indexOf('\x00')+1))
 }
