@@ -1,10 +1,12 @@
 const fs = require("fs");
 const path = require("path");
 const zlib = require("zlib");
-// You can use print statements as follows for debugging, they'll be visible when running tests.
-console.error("Logs from your program will appear here!");
 
-// Uncomment this block to pass the first stage
+const GitClient = require('./git/client');
+const {CatFileCommand} = require('./git/commands');
+
+const gitclient = new GitClient();
+
 const command = process.argv[2];
 
 switch (command) {
@@ -12,7 +14,7 @@ switch (command) {
     createGitDirectory();
     break;
   case "cat-file":
-    readFileBlob();
+    handleCatFileCommand();
     break;
   default:
     throw new Error(`Unknown command ${command}`);
@@ -27,8 +29,10 @@ function createGitDirectory() {
   console.log("Initialized git directory");
 }
 
-function readFileBlob(){
-    const blob = fs.readFileSync(path.join(process.cwd(), '.git', 'objects', process.argv[4].substring(0, 2), process.argv[4].substring(2) ))
-    const bufferToString = zlib.unzipSync(blob).toString()
-    process.stdout.write(bufferToString.substring(bufferToString.indexOf('\x00')+1))
+function handleCatFileCommand(){
+    const flag = process.argv[3]; // getting the flag here
+    const commitSHA= process.argv[4];
+
+    const catFileCommand = new CatFileCommand(flag, commitSHA);
+    gitclient.run(catFileCommand);
 }
