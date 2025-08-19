@@ -3,7 +3,8 @@ const path = require("path");
 const zlib = require("zlib");
 
 const GitClient = require('./git/client');
-const {CatFileCommand} = require('./git/commands');
+const {CatFileCommand,handleHashFileCommand, HashFileCommand} = require('./git/commands');
+const { Hash } = require("crypto");
 
 const gitclient = new GitClient();
 
@@ -16,6 +17,9 @@ switch (command) {
   case "cat-file":
     handleCatFileCommand();
     break;
+  case "hash-file":
+    handleHashFileCommand();
+    break;  
   default:
     throw new Error(`Unknown command ${command}`);
 }
@@ -35,4 +39,17 @@ function handleCatFileCommand(){
 
     const catFileCommand = new CatFileCommand(flag, commitSHA);
     gitclient.run(catFileCommand);
+}
+
+function handleHashFileCommand(){
+    let flag = process.argv[3];
+    let filePath = process.argv[4];
+
+
+    if(!filePath){
+      filePath = flag;
+      flag = null;
+    }
+    const command = new HashFileCommand(flag, filePath);
+    gitclient.run(command);
 }
